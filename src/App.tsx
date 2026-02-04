@@ -1,10 +1,9 @@
 import React from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import WeatherDashboard from '../src/components/WeatherDashboard';
+import WeatherDashboard from './components/WeatherDashboard';
 
 function App() {
   return (
-    <div className="App">
+    <div className="min-vh-100 bg-light py-3">
       <WeatherDashboard />
     </div>
   );
