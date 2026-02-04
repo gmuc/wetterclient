@@ -1,128 +1,131 @@
-@use "sass:color"; // Muss ganz oben stehen
+@use "sass:color";
 @use "./variables" as v;
 
 .weather-container {
-    max-width: 1200px;
-    margin: 2rem auto;
-    font-family: v.$br-font-family;
-    color: v.$br-text-dark;
+  max-width: 1200px;
+  margin: 1.5rem auto;
+  font-family: v.$br-font-family;
+  
+  .tabs-container {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    background-color: v.$br-blue; // Basis-Blau für inaktive Tabs
+    padding: 0;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
 
-    .tabs-scroll-wrapper {
-        position: relative;
-        background: #fff;
-        border-bottom: 1px solid v.$br-border;
-        width: 100%; // Sicherstellen, dass es den Platz nutzt
-
-        .tabs-container {
-            display: flex !important; // Erzwingt Flexbox gegen Bootstrap-Einflüsse
-            flex-wrap: nowrap !important; // Verhindert Umbruch nach 6 Tagen
-            overflow-x: auto !important; // Ermöglicht das Scrollen
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-
-            &::-webkit-scrollbar {
-                display: none;
-            }
-
-            .day-tab {
-                flex: 0 0 auto !important; // WICHTIG: Verhindert das Schrumpfen
-                width: 110px; // Inaktive Breite
-                padding: 1.25rem 0.5rem;
-                text-align: center;
-                cursor: pointer;
-                border-bottom: 4px solid transparent;
-                transition: all 0.2s ease-in-out;
-
-                &:hover:not(.active) {
-                    background-color: rgba(v.$br-blue, 0.05);
-                }
-
-                &.active {
-                    width: 180px; // Aktiver Tab wird breiter
-                    background-color: v.$br-light-blue;
-                    border-bottom-color: v.$br-blue;
-                    color: v.$br-blue;
-
-                    .day-label {
-                        font-weight: 700;
-                    }
-                }
-
-                .day-label {
-                    font-size: 0.875rem;
-                    margin-bottom: 0.5rem;
-                    display: block;
-                    white-space: nowrap;
-                }
-
-                .weather-icon {
-                    font-size: 1.75rem;
-                    margin-bottom: 0.5rem;
-                }
-
-                .temp-group {
-                    display: flex;
-                    flex-direction: column;
-                    line-height: 1.2;
-
-                    .temp-max {
-                        font-weight: 700;
-                        font-size: 1.125rem;
-                    }
-
-                    .temp-min {
-                        font-size: 0.8125rem;
-                        color: v.$br-text-muted;
-                    }
-                }
-            }
-        }
+    &::-webkit-scrollbar {
+      display: none;
     }
 
-    .detail-drawer {
-        background: #fff;
-        border: 1px solid v.$br-border;
-        border-top: none;
+    .day-tab {
+      flex: 0 0 auto !important;
+      width: 100px;
+      padding: 1rem 0.5rem;
+      text-align: center;
+      cursor: pointer;
+      color: #ffffff;
+      border-right: 1px solid rgba(255, 255, 255, 0.2);
+      transition: background-color 0.2s;
 
-        .detail-header {
-            padding: 0.75rem 1rem;
-            // Ersetzt lighten(v.$br-border, 5%) durch die moderne Variante:
-            border-bottom: 1px solid color.adjust(v.$br-border, $lightness: 5%);
-            display: flex;
-            justify-content: space-between;
+      &:hover:not(.active) {
+        background-color: color.adjust(v.$br-blue, $lightness: 5%);
+      }
 
-            .title {
-                font-size: 0.7rem;
-                font-weight: 700;
-                text-transform: uppercase;
-                color: v.$br-text-muted;
+      // DER AKTIVE TAB - Das Herzstück
+      &.active {
+        width: 500px !important; // Viel breiter, um die Stundenliste aufzunehmen
+        background-color: #ffffff; // Weißer Hintergrund wie beim BR
+        color: v.$br-text-dark;
+        cursor: default;
+        text-align: left;
+        padding: 0; // Padding wird intern geregelt
+        display: flex;
+        flex-direction: column;
+
+        .tab-header-top {
+          padding: 1rem 1.25rem 0.5rem 1.25rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          
+          .date-info {
+            .day-label {
+              font-weight: 700;
+              font-size: 1rem;
+              color: v.$br-blue;
+              margin-bottom: 2px;
             }
-        }
-
-        .hours-container {
-            display: flex;
-            overflow-x: auto;
-            padding: 1rem 0;
-
-            .hour-item {
-                flex: 0 0 85px;
-                text-align: center;
-                border-right: 1px solid #f0f0f0;
-
-                .hour-time {
-                    font-size: 0.75rem;
-                    color: v.$br-text-muted;
-                }
-
-                .hour-temp {
-                    font-weight: 700;
-                }
-
-                .hour-precip {
-                    font-size: 0.7rem;
-                    color: v.$br-blue;
-                }
+            .status-text {
+              font-size: 0.85rem;
+              color: v.$br-text-muted;
             }
+          }
+
+          .main-temp {
+            text-align: right;
+            .temp-max {
+              font-weight: 700;
+              font-size: 1.5rem;
+              display: block;
+            }
+          }
         }
+      }
+
+      // Styling für inaktive Inhalte
+      .inaktive-content {
+        .day-label {
+          font-size: 0.85rem;
+          margin-bottom: 0.5rem;
+          display: block;
+        }
+        .weather-icon {
+          font-size: 1.5rem;
+          margin-bottom: 0.5rem;
+        }
+        .temp-max {
+          font-weight: 700;
+          display: block;
+        }
+        .temp-min {
+          font-size: 0.75rem;
+          opacity: 0.8;
+        }
+      }
     }
+  }
+
+  // Horizontale Stundenliste INNERHALB des aktiven Tabs
+  .hours-scroll-area {
+    display: flex;
+    overflow-x: auto;
+    padding: 0.5rem 1.25rem 1.25rem 1.25rem;
+    gap: 15px;
+    scrollbar-width: thin;
+
+    .hour-item {
+      flex: 0 0 60px;
+      text-align: center;
+
+      .hour-time {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: v.$br-text-muted;
+      }
+      .hour-icon {
+        font-size: 1.25rem;
+        margin: 0.3rem 0;
+      }
+      .hour-temp {
+        font-weight: 700;
+        font-size: 0.95rem;
+      }
+      .hour-precip {
+        font-size: 0.65rem;
+        color: v.$br-blue;
+      }
+    }
+  }
 }
