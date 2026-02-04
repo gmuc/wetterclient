@@ -1,61 +1,128 @@
-@use "./variables" as v; // 'v' ist jetzt der Namensraum
+@use "sass:color"; // Muss ganz oben stehen
+@use "./variables" as v;
 
 .weather-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  font-family: v.$br-font-family;
+    max-width: 1200px;
+    margin: 2rem auto;
+    font-family: v.$br-font-family;
+    color: v.$br-text-dark;
 
-  .tabs-scroll-wrapper {
-    position: relative;
-    border-bottom: 1px solid v.$br-border;
-    background: #fff;
+    .tabs-scroll-wrapper {
+        position: relative;
+        background: #fff;
+        border-bottom: 1px solid v.$br-border;
+        width: 100%; // Sicherstellen, dass es den Platz nutzt
 
-    .tabs-container {
-      display: flex;
-      flex-wrap: nowrap; // Erzwingt eine einzige Reihe
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch; // Weiches Scrollen auf iOS
-      scrollbar-width: none; 
-      &::-webkit-scrollbar { display: none; }
+        .tabs-container {
+            display: flex !important; // Erzwingt Flexbox gegen Bootstrap-Einflüsse
+            flex-wrap: nowrap !important; // Verhindert Umbruch nach 6 Tagen
+            overflow-x: auto !important; // Ermöglicht das Scrollen
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
 
-      .day-tab {
-        // Die "Magie": flex-grow: 0, flex-shrink: 0, flex-basis: auto
-        flex: 0 0 auto; 
-        
-        padding: 15px 5px;
-        text-align: center;
-        cursor: pointer;
-        border-bottom: 4px solid transparent;
-        transition: all 0.2s ease;
+            &::-webkit-scrollbar {
+                display: none;
+            }
 
-        // Standardbreite für inaktive Tage
-        width: 100px; 
+            .day-tab {
+                flex: 0 0 auto !important; // WICHTIG: Verhindert das Schrumpfen
+                width: 110px; // Inaktive Breite
+                padding: 1.25rem 0.5rem;
+                text-align: center;
+                cursor: pointer;
+                border-bottom: 4px solid transparent;
+                transition: all 0.2s ease-in-out;
 
-        &.active {
-          // Breite für den geöffneten Tag (etwas mehr Platz für Datum)
-          width: 180px; 
-          background-color: v.$br-light-blue;
-          border-bottom-color: v.$br-blue;
-          color: v.$br-blue;
-          font-weight: bold;
+                &:hover:not(.active) {
+                    background-color: rgba(v.$br-blue, 0.05);
+                }
+
+                &.active {
+                    width: 180px; // Aktiver Tab wird breiter
+                    background-color: v.$br-light-blue;
+                    border-bottom-color: v.$br-blue;
+                    color: v.$br-blue;
+
+                    .day-label {
+                        font-weight: 700;
+                    }
+                }
+
+                .day-label {
+                    font-size: 0.875rem;
+                    margin-bottom: 0.5rem;
+                    display: block;
+                    white-space: nowrap;
+                }
+
+                .weather-icon {
+                    font-size: 1.75rem;
+                    margin-bottom: 0.5rem;
+                }
+
+                .temp-group {
+                    display: flex;
+                    flex-direction: column;
+                    line-height: 1.2;
+
+                    .temp-max {
+                        font-weight: 700;
+                        font-size: 1.125rem;
+                    }
+
+                    .temp-min {
+                        font-size: 0.8125rem;
+                        color: v.$br-text-muted;
+                    }
+                }
+            }
+        }
+    }
+
+    .detail-drawer {
+        background: #fff;
+        border: 1px solid v.$br-border;
+        border-top: none;
+
+        .detail-header {
+            padding: 0.75rem 1rem;
+            // Ersetzt lighten(v.$br-border, 5%) durch die moderne Variante:
+            border-bottom: 1px solid color.adjust(v.$br-border, $lightness: 5%);
+            display: flex;
+            justify-content: space-between;
+
+            .title {
+                font-size: 0.7rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                color: v.$br-text-muted;
+            }
         }
 
-        // BR-Style: Wochentage etwas fetter
-        .day-label {
-          font-size: 14px;
-          display: block;
-        }
-      }
-    }
-  }
-}
+        .hours-container {
+            display: flex;
+            overflow-x: auto;
+            padding: 1rem 0;
 
-/* Media Query für Mobilgeräte */
-@media (max-width: 768px) {
-  .weather-container .tabs-scroll-wrapper .tabs-container .day-tab {
-    width: 80px; // Mobil etwas schmaler
-    &.active {
-      width: 150px;
+            .hour-item {
+                flex: 0 0 85px;
+                text-align: center;
+                border-right: 1px solid #f0f0f0;
+
+                .hour-time {
+                    font-size: 0.75rem;
+                    color: v.$br-text-muted;
+                }
+
+                .hour-temp {
+                    font-weight: 700;
+                }
+
+                .hour-precip {
+                    font-size: 0.7rem;
+                    color: v.$br-blue;
+                }
+            }
+        }
     }
-  }
 }
