@@ -1,0 +1,19 @@
+// BR Corporate Design Farben
+$br-blue: #00569d;
+$br-light-blue: #e6eff7;
+$br-text-dark: #444;
+$br-border: #dee2e6;
+$br-font-family: 'Open Sans', Arial, sans-serif;
+
+// Breakpoints für die identische Responsivität
+$breakpoint-mobile: 576px;
+$breakpoint-tablet: 768px;
+$breakpoint-desktop: 992px;
+
+// Mixin für Hover-Effekte (wie im Original)
+@mixin br-hover {
+  &:hover {
+    background-color: #f1f3f5;
+    transition: background 0.2s ease;
+  }
+}

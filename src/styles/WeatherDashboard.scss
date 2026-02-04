@@ -1,0 +1,61 @@
+@import 'variables';
+
+.weather-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: $br-font-family;
+
+  .tabs-scroll-wrapper {
+    position: relative;
+    border-bottom: 1px solid $br-border;
+    background: #fff;
+
+    .tabs-container {
+      display: flex;
+      flex-wrap: nowrap; // Erzwingt eine einzige Reihe
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch; // Weiches Scrollen auf iOS
+      scrollbar-width: none; 
+      &::-webkit-scrollbar { display: none; }
+
+      .day-tab {
+        // Die "Magie": flex-grow: 0, flex-shrink: 0, flex-basis: auto
+        flex: 0 0 auto; 
+        
+        padding: 15px 5px;
+        text-align: center;
+        cursor: pointer;
+        border-bottom: 4px solid transparent;
+        transition: all 0.2s ease;
+
+        // Standardbreite für inaktive Tage
+        width: 100px; 
+
+        &.active {
+          // Breite für den geöffneten Tag (etwas mehr Platz für Datum)
+          width: 180px; 
+          background-color: $br-light-blue;
+          border-bottom-color: $br-blue;
+          color: $br-blue;
+          font-weight: bold;
+        }
+
+        // BR-Style: Wochentage etwas fetter
+        .day-label {
+          font-size: 14px;
+          display: block;
+        }
+      }
+    }
+  }
+}
+
+/* Media Query für Mobilgeräte */
+@media (max-width: 768px) {
+  .weather-container .tabs-scroll-wrapper .tabs-container .day-tab {
+    width: 80px; // Mobil etwas schmaler
+    &.active {
+      width: 150px;
+    }
+  }
+}

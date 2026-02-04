@@ -2,95 +2,109 @@ import React, { useEffect, useState } from 'react';
 import type { WeatherResponse } from '../types/Weather';
 import { fetchWeatherByZip } from '../services/WeatherService';
 
+// Import der Styles aus dem neuen Styles-Ordner
+import '../styles/WeatherDashboard.scss';
+
 const WeatherDashboard: React.FC = () => {
   const [data, setData] = useState<WeatherResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [zip, setZip] = useState('81677'); // Standard-PLZ entsprechend deiner Datei
+  const [zip, setZip] = useState('81677');
+  const [openDayIndex, setOpenDayIndex] = useState<number>(0);
 
   useEffect(() => {
     fetchWeatherByZip(zip)
       .then(setData)
-      .catch((err) => setError(err.message));
+      .catch((err) => {
+        console.error(err);
+        setError("Daten konnten nicht geladen werden.");
+      });
   }, [zip]);
 
-  if (error) return <div className="alert alert-danger m-4">Fehler: {error}</div>;
-  if (!data) return <div className="text-center mt-5"><div className="spinner-border"></div><p>Lade Wetter...</p></div>;
+  if (error) return <div className="container mt-5 alert alert-danger">{error}</div>;
+  if (!data) return <div className="container mt-5 text-center px-5 py-5"><div className="spinner-border text-primary"></div></div>;
 
-  // Hilfsfunktion zum Formatieren der Strings (z.B. "4.2000" -> "4.2")
-  const formatValue = (val: string) => parseFloat(val).toFixed(1);
+  // Parser für das JSON-Datumsformat "03-02-2026..."
+  const parseDate = (dateIso: string) => {
+    const [day, month, year] = dateIso.split('T')[0].split('-');
+    return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+  };
+
+  // Hilfsfunktion zum Runden von Temperatur-Strings
+  const formatTemp = (t: string | undefined) => {
+    if (!t) return "--";
+    return Math.round(parseFloat(t.replace(',', '.')));
+  };
 
   return (
-    <div className="container mt-4">
-      {/* Suchzeile */}
-      <div className="row mb-4">
-        <div className="col">
-          <div className="input-group shadow-sm">
-            <input 
-              type="text" 
-              className="form-control" 
-              placeholder="PLZ eingeben..." 
-              value={zip} 
-              onChange={(e) => setZip(e.target.value)}
-            />
-            <button className="btn btn-primary">Aktualisieren</button>
-          </div>
+    <div className="weather-container mt-4">
+      
+      {/* 1. TAGES-TABS (Horizontal scrollbar) */}
+      <div className="tabs-scroll-wrapper">
+        <div className="tabs-container">
+          {data.days.map((day, index) => {
+            const date = parseDate(day.dateIso);
+            const isActive = openDayIndex === index;
+            
+            // "Heute" Logik für den ersten Eintrag
+            const dayLabel = index === 0 ? "Heute" : date.toLocaleDateString('de-DE', { weekday: 'short' });
+
+            return (
+              <div 
+                key={`${day.dateIso}-${index}`} 
+                onClick={() => setOpenDayIndex(index)}
+                className={`day-tab ${isActive ? 'active' : ''}`}
+              >
+                <div className="day-label">
+                  {isActive ? (
+                    `${date.toLocaleDateString('de-DE', { weekday: 'long' })}, ${date.getDate()}.${date.getMonth() + 1}.`
+                  ) : (
+                    dayLabel
+                  )}
+                </div>
+                
+                {/* Platzhalter für SVG Icons */}
+                <div className="weather-icon my-2" style={{ fontSize: '28px' }}>☁️</div>
+
+                <div className="temp-max fw-bold">
+                  {formatTemp(day.maxTemperature)}°
+                </div>
+                <div className="temp-min text-muted small">
+                  {formatTemp(day.minTemperature)}°
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* Aktuelle Beobachtung (obs) */}
-      <div className="card shadow-sm mb-4 bg-primary text-white border-0">
-        <div className="card-body p-4 text-center">
-          <h1 className="display-4 fw-bold">{data.locationName}</h1>
-          <p className="lead">{data.obs.weatherSituationName}</p>
-          <div className="display-1 fw-bold mb-3">{formatValue(data.obs.temperature)}°C</div>
-          <div className="d-flex justify-content-center gap-4">
-            <span>Wind: {data.obs.windSpeed} km/h</span>
-            <span>Feuchte: {data.obs.airHumidity}%</span>
-          </div>
+      {/* 2. DETAIL-DRAWER (Stundenleiste des ausgewählten Tages) */}
+      <div className="detail-drawer mb-5">
+        {/* Optionaler Header für den Detailbereich */}
+        <div className="p-2 px-3 border-bottom bg-light small d-flex justify-content-between">
+          <span className="text-uppercase fw-bold text-muted" style={{ fontSize: '10px', letterSpacing: '1px' }}>
+            Stündliche Vorhersage
+          </span>
+          <span className="text-muted fw-normal" style={{ fontSize: '11px' }}>
+            {data.days[openDayIndex].weatherSituationName}
+          </span>
         </div>
-      </div>
 
-      {/* Stündliche Vorhersage (Scrollbar) */}
-      <h3 className="mb-3">Heute</h3>
-      <div className="d-flex overflow-auto pb-3 gap-3" style={{ scrollbarWidth: 'thin' }}>
-        {data.days[0].timedforecasts.dayDetails.map((hour, index) => (
-          <div key={index} className="card shadow-sm text-center border-0" style={{ minWidth: '110px' }}>
-            <div className="card-header bg-light py-1 small fw-bold">{hour.hourFormatted}</div>
-            <div className="card-body">
-              {/* Hier könnte man später Icons basierend auf hour.weatherSituationStyle mappen */}
-              <div className="fs-3 mb-1">☁️</div> 
-              <div className="fw-bold">{formatValue(hour.temperature)}°</div>
-              <div className="text-primary small mt-1">{hour.precipitationProbability}%</div>
+        <div className="d-flex overflow-auto">
+          {data.days[openDayIndex].timedforecasts.dayDetails.map((hour, hIndex) => (
+            <div key={hIndex} className="hour-item">
+              <div className="hour-time mb-2">
+                {hour.hourFormatted}
+              </div>
+              <div className="hour-icon mb-2 fs-4">☁️</div>
+              <div className="hour-temp fw-bold">
+                {parseFloat(hour.temperature.replace(',', '.')).toFixed(1)}°
+              </div>
+              <div className="hour-precip text-primary mt-1">
+                {hour.precipitationProbability}%
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Detailtabelle wie in Wicket-ListViews */}
-      <div className="mt-5">
-        <h4>Wetter-Details</h4>
-        <table className="table table-striped table-hover mt-3 shadow-sm rounded overflow-hidden">
-          <thead className="table-dark">
-            <tr>
-              <th>Uhrzeit</th>
-              <th>Situation</th>
-              <th>Temp.</th>
-              <th>Regen</th>
-              <th>Wind</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.days[0].timedforecasts.dayDetails.slice(0, 8).map((hour, i) => (
-              <tr key={i}>
-                <td>{hour.hourFormatted}</td>
-                <td>{hour.weatherSituationName}</td>
-                <td>{formatValue(hour.temperature)}°C</td>
-                <td>{hour.precipitationProbability}%</td>
-                <td>{hour.windSpeed} km/h</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+          ))}
+        </div>
       </div>
     </div>
   );
