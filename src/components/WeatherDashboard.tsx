@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import type { WeatherResponse } from '../types/Weather';
 import { fetchWeatherByZip } from '../services/WeatherService';
-
+import WeatherHeader from './WeatherHeader';
 import '../styles/WeatherDashboard.scss';
 
 const WeatherDashboard: React.FC = () => {
@@ -9,87 +9,109 @@ const WeatherDashboard: React.FC = () => {
   const [zip] = useState('81677');
   const [openDayIndex, setOpenDayIndex] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
+  const [showArrow, setShowArrow] = useState(true);
+  
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setLoading(true);
-    fetchWeatherByZip(zip)
-      .then((res) => {
-        setData(res);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Fehler beim Laden:", err);
-        setLoading(false);
-      });
+    fetchWeatherByZip(zip).then((res) => {
+      setData(res);
+      setLoading(false);
+    });
   }, [zip]);
 
-  if (loading) return <div className="text-center mt-5"><div className="spinner-border text-primary"></div></div>;
-  if (!data || !data.days) return <div className="alert alert-warning">Keine Wetterdaten gefunden.</div>;
+  // Prüfen, ob das Ende erreicht ist
+  const handleScroll = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      // Wenn wir fast am Ende sind (5px Puffer), Pfeil ausblenden
+      setShowArrow(scrollLeft + clientWidth < scrollWidth - 5);
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: 300, behavior: 'smooth' });
+    }
+  };
+
+  if (loading || !data) return null;
 
   const parseDate = (dateIso: string) => {
     const [day, month, year] = dateIso.split('T')[0].split('-');
     return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
   };
 
-  const formatTemp = (t: string | undefined) => {
-    if (!t) return "--";
-    return Math.round(parseFloat(t.replace(',', '.')));
-  };
+  const formatTemp = (t: string | undefined) => Math.round(parseFloat(t?.replace(',', '.') || '0'));
+
+  const today = data.days[0];
 
   return (
-    <div className="weather-container shadow-sm border overflow-hidden">
-      <div className="tabs-container">
-        {data.days.map((day, index) => {
-          const date = parseDate(day.dateIso);
-          const isActive = openDayIndex === index;
-          
-          return (
-            <div 
-              key={`${day.dateIso}-${index}`} 
-              onClick={() => setOpenDayIndex(index)}
-              className={`day-tab ${isActive ? 'active' : ''}`}
-            >
-              {isActive ? (
-                /* AKTIVER TAB INHALT */
-                <>
-                  <div className="tab-header-top">
-                    <div className="date-info">
-                      <div className="day-label">
-                        {date.toLocaleDateString('de-DE', { weekday: 'long' })}, {date.getDate()}.{date.getMonth() + 1}.
-                      </div>
-                      <div className="status-text">{day.weatherSituationName}</div>
+    <div className="weather-app-wrapper">
+      <WeatherHeader 
+        zip={zip}
+        city="München (Bogenhausen)"
+        temperature={formatTemp(today.maxTemperature)}
+        condition={today.weatherSituationName}
+      />
+
+      <div className="accordion-block content-width">
+        <div 
+          className="tabs-container" 
+          ref={scrollRef}
+          onScroll={handleScroll}
+        >
+          {data.days.map((day, index) => {
+            const date = parseDate(day.dateIso);
+            const isActive = openDayIndex === index;
+
+            return (
+              <div 
+                key={index} 
+                className={`day-tab ${isActive ? 'active' : ''}`}
+                onClick={() => setOpenDayIndex(index)}
+              >
+                {isActive ? (
+                  <div className="active-content">
+                    <div className="active-title">
+                      <h3>{date.toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: '2-digit' })}</h3>
+                      <p>{day.weatherSituationName}</p>
                     </div>
-                    <div className="main-temp">
-                      <span className="temp-max">{formatTemp(day.maxTemperature)}°</span>
+                    <div className="active-temp">{formatTemp(day.maxTemperature)}°</div>
+                    <div className="hours-list">
+                      {day.timedforecasts.dayDetails.map((h, i) => (
+                        <div key={i} className="h-item">
+                          <div className="h-time">{h.hourFormatted}</div>
+                          <div className="h-icon">☁️</div>
+                          <div className="h-temp">{formatTemp(h.temperature)}°</div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                  
-                  {/* Stundenliste direkt im Tab */}
-                  <div className="hours-scroll-area">
-                    {day.timedforecasts.dayDetails.map((hour, hIndex) => (
-                      <div key={hIndex} className="hour-item">
-                        <div className="hour-time">{hour.hourFormatted}</div>
-                        <div className="hour-icon">☁️</div>
-                        <div className="hour-temp">{formatTemp(hour.temperature)}°</div>
-                        <div className="hour-precip">{hour.precipitationProbability}%</div>
-                      </div>
-                    ))}
+                ) : (
+                  <div className="inactive-content">
+                    <div className="label-section">
+                      {index === 0 ? "HEUTE" : date.toLocaleDateString('de-DE', { weekday: 'short' }).toUpperCase()}
+                    </div>
+                    <div className="upper-half">☁️</div>
+                    <div className="lower-half">
+                      <span className="t-max">{formatTemp(day.maxTemperature)}°</span>
+                      <span className="t-min">{formatTemp(day.minTemperature)}°</span>
+                    </div>
                   </div>
-                </>
-              ) : (
-                /* INAKTIVER TAB INHALT */
-                <div className="inaktive-content">
-                  <span className="day-label">
-                    {index === 0 ? "Heute" : date.toLocaleDateString('de-DE', { weekday: 'short' })}
-                  </span>
-                  <div className="weather-icon">☁️</div>
-                  <span className="temp-max">{formatTemp(day.maxTemperature)}°</span>
-                  <span className="temp-min">{formatTemp(day.minTemperature)}°</span>
-                </div>
-              )}
-            </div>
-          );
-        })}
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Scroll Pfeil Button */}
+        {showArrow && (
+          <button className="scroll-arrow" onClick={scrollRight}>
+            ▶
+          </button>
+        )}
       </div>
     </div>
   );

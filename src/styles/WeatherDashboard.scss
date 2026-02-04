@@ -1,131 +1,341 @@
 @use "sass:color";
 @use "./variables" as v;
 
-.weather-container {
-  max-width: 1200px;
-  margin: 1.5rem auto;
-  font-family: v.$br-font-family;
-  
+// Deine exakten Farbvorgaben
+$br-blue-dark: #00569d;
+$bg-gray-box: #dbd9d3;
+$tab-inactive-upper: #cae9fd;
+$tab-inactive-lower: #eaf7fe;
+
+.weather-app-wrapper {
+  background-color: $bg-gray-box;
+  padding: 2rem 1rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.content-width {
+  width: 100%;
+  max-width: 1000px;
+}
+
+// HEADER STYLING
+.weather-header-block {
+  background-color: white;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+
+  .search-bar {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    .input-wrapper {
+      flex: 1;
+      input {
+        border: none;
+        font-weight: 700;
+        font-size: 1.25rem;
+        color: $br-blue-dark;
+        outline: none;
+        width: 100%;
+        cursor: text;
+      }
+    }
+    .search-icon {
+      font-size: 1.2rem;
+      color: #999;
+      cursor: pointer;
+    }
+  }
+
+  .current-condition {
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+
+    .current-temp {
+      font-size: 3.8rem;
+      font-weight: 700;
+      color: $br-blue-dark;
+      line-height: 1;
+    }
+    .current-info {
+      .city { font-weight: 700; font-size: 1.15rem; margin: 0 0 0.2rem 0; }
+      .desc { color: v.$br-text-muted; font-size: 1rem; }
+    }
+  }
+}
+
+// ACCORDION STYLING
+.accordion-block {
+  background-color: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+
   .tabs-container {
     display: flex !important;
     flex-wrap: nowrap !important;
     overflow-x: auto !important;
-    background-color: v.$br-blue; // Basis-Blau für inaktive Tabs
-    padding: 0;
+    height: 400px; // Erhöht auf BR-Niveau
+    background-color: $br-blue-dark;
     scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-
-    &::-webkit-scrollbar {
-      display: none;
-    }
+    &::-webkit-scrollbar { display: none; }
 
     .day-tab {
-      flex: 0 0 auto !important;
-      width: 100px;
-      padding: 1rem 0.5rem;
-      text-align: center;
+      flex: 1 0 auto !important;
+      min-width: 115px;
+      height: 100%;
       cursor: pointer;
-      color: #ffffff;
-      border-right: 1px solid rgba(255, 255, 255, 0.2);
-      transition: background-color 0.2s;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid rgba(255, 255, 255, 0.15);
 
-      &:hover:not(.active) {
-        background-color: color.adjust(v.$br-blue, $lightness: 5%);
-      }
-
-      // DER AKTIVE TAB - Das Herzstück
-      &.active {
-        width: 500px !important; // Viel breiter, um die Stundenliste aufzunehmen
-        background-color: #ffffff; // Weißer Hintergrund wie beim BR
-        color: v.$br-text-dark;
-        cursor: default;
-        text-align: left;
-        padding: 0; // Padding wird intern geregelt
+      .inactive-content {
+        height: 100%;
         display: flex;
         flex-direction: column;
 
-        .tab-header-top {
-          padding: 1rem 1.25rem 0.5rem 1.25rem;
+        .label-section {
+          height: 55px;
+          background-color: $br-blue-dark;
+          color: white;
           display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          
-          .date-info {
-            .day-label {
-              font-weight: 700;
-              font-size: 1rem;
-              color: v.$br-blue;
-              margin-bottom: 2px;
-            }
-            .status-text {
-              font-size: 0.85rem;
-              color: v.$br-text-muted;
-            }
+          align-items: center;
+          justify-content: center;
+          font-weight: 700;
+          font-size: 0.9rem;
+          letter-spacing: 0.05rem;
+        }
+
+        .upper-half {
+          flex: 1;
+          background-color: $tab-inactive-upper;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 2.2rem;
+        }
+
+        .lower-half {
+          flex: 1;
+          background-color: $tab-inactive-lower;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          color: $br-blue-dark;
+
+          .t-max { font-weight: 700; font-size: 1.35rem; }
+          .t-min { font-size: 0.9rem; font-weight: 600; opacity: 0.8; }
+        }
+      }
+
+      &.active {
+        flex: 0 0 680px !important;
+        background-color: white;
+        
+        .active-content {
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 2.5rem;
+
+          .active-title {
+            text-align: center;
+            margin-bottom: 1.2rem;
+            h3 { font-weight: 700; color: $br-blue-dark; font-size: 1.5rem; margin: 0; }
+            p { color: v.$br-text-muted; font-size: 1.1rem; }
           }
 
-          .main-temp {
-            text-align: right;
-            .temp-max {
-              font-weight: 700;
-              font-size: 1.5rem;
-              display: block;
+          .active-temp {
+            font-size: 3.8rem;
+            font-weight: 700;
+            color: $br-blue-dark;
+            margin-bottom: 2rem;
+            line-height: 1;
+          }
+
+          .hours-list {
+            display: flex;
+            overflow-x: auto;
+            width: 100%;
+            gap: 25px;
+            padding-bottom: 1rem;
+            scrollbar-width: thin;
+
+            .h-item {
+              flex: 0 0 70px;
+              text-align: center;
+              .h-time { font-size: 0.9rem; font-weight: 700; color: #666; }
+              .h-icon { font-size: 1.8rem; margin: 0.6rem 0; }
+              .h-temp { font-weight: 700; font-size: 1.2rem; }
             }
           }
         }
       }
+    }
+  }
+}@use "sass:color";
+@use "./variables" as v;
 
-      // Styling für inaktive Inhalte
-      .inaktive-content {
-        .day-label {
-          font-size: 0.85rem;
-          margin-bottom: 0.5rem;
-          display: block;
-        }
-        .weather-icon {
-          font-size: 1.5rem;
-          margin-bottom: 0.5rem;
-        }
-        .temp-max {
+$br-blue-dark: #00569d;
+$bg-gray-box: #dbd9d3;
+$tab-inactive-upper: #cae9fd;
+$tab-inactive-lower: #eaf7fe;
+
+.weather-app-wrapper {
+  background-color: $bg-gray-box;
+  padding: 2rem 1rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.content-width {
+  width: 100%;
+  max-width: 1000px;
+  position: relative; // Wichtig für absoluten Pfeil
+}
+
+.accordion-block {
+  background-color: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  position: relative;
+
+  .tabs-container {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    height: 400px;
+    background-color: $br-blue-dark;
+    scrollbar-width: none;
+    scroll-behavior: smooth; // Sanftes Scrollen bei Pfeilklick
+
+    &::-webkit-scrollbar { display: none; }
+
+    .day-tab {
+      // FIX: flex-shrink auf 0 setzen, damit ALLE Tage gerendert werden
+      flex: 0 0 auto !important; 
+      width: 115px;
+      height: 100%;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid rgba(255, 255, 255, 0.15);
+
+      .inactive-content {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+
+        .label-section {
+          height: 55px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           font-weight: 700;
-          display: block;
+          font-size: 0.9rem;
+          color: white;
         }
-        .temp-min {
-          font-size: 0.75rem;
-          opacity: 0.8;
+
+        .upper-half {
+          flex: 1;
+          background-color: $tab-inactive-upper;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 2.2rem;
+        }
+
+        .lower-half {
+          flex: 1;
+          background-color: $tab-inactive-lower;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          color: $br-blue-dark;
+
+          .t-max { font-weight: 700; font-size: 1.35rem; }
+          .t-min { font-size: 0.9rem; font-weight: 600; opacity: 0.8; }
+        }
+      }
+
+      &.active {
+        width: 680px !important;
+        background-color: white;
+        
+        .active-content {
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 2.5rem;
+          color: $br-blue-dark;
+
+          .active-title {
+            text-align: center;
+            margin-bottom: 1.2rem;
+            h3 { font-weight: 700; margin: 0; font-size: 1.5rem; }
+            p { color: v.$br-text-muted; font-size: 1.1rem; }
+          }
+
+          .active-temp {
+            font-size: 3.8rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+          }
+
+          .hours-list {
+            display: flex;
+            overflow-x: auto;
+            width: 100%;
+            gap: 25px;
+            padding-bottom: 1rem;
+            .h-item {
+              flex: 0 0 70px;
+              text-align: center;
+              .h-time { font-size: 0.9rem; font-weight: 700; color: #666; }
+              .h-icon { font-size: 1.8rem; margin: 0.6rem 0; }
+              .h-temp { font-weight: 700; }
+            }
+          }
         }
       }
     }
   }
 
-  // Horizontale Stundenliste INNERHALB des aktiven Tabs
-  .hours-scroll-area {
+  // Scroll-Pfeil Styling
+  .scroll-arrow {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 45px;
+    height: 45px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
     display: flex;
-    overflow-x: auto;
-    padding: 0.5rem 1.25rem 1.25rem 1.25rem;
-    gap: 15px;
-    scrollbar-width: thin;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    z-index: 10;
+    color: $br-blue-dark;
+    font-size: 1.5rem;
+    font-weight: bold;
+    border: none;
+    transition: opacity 0.3s;
 
-    .hour-item {
-      flex: 0 0 60px;
-      text-align: center;
-
-      .hour-time {
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: v.$br-text-muted;
-      }
-      .hour-icon {
-        font-size: 1.25rem;
-        margin: 0.3rem 0;
-      }
-      .hour-temp {
-        font-weight: 700;
-        font-size: 0.95rem;
-      }
-      .hour-precip {
-        font-size: 0.65rem;
-        color: v.$br-blue;
-      }
+    &:hover {
+      background-color: white;
     }
   }
 }
